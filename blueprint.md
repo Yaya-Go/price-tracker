@@ -1,31 +1,37 @@
-# Price Tracker App Blueprint
+# Project Blueprint
 
 ## Overview
 
-This document outlines the architecture and features of the Price Tracker application. The app allows users to track the prices of items over time, with a focus on simplicity and ease of use.
+This document outlines the structure, features, and development history of the Flutter application. It serves as a single source of truth for the project's design and implementation.
 
-## Features
+## Features & Design
 
-*   **User Authentication:** Users can create an account and log in using their email and password.
-*   **Item Tracking:** Users can add, edit, and delete items they want to track.
-*   **Price Logging:** For each item, users can log prices at different locations.
-*   **Categorization:** Items can be organized into categories.
-*   **Location Management:** Users can manage a list of locations where they purchase items.
+*   **Firebase Integration:** The project is connected to a Firebase backend.
+*   **Dependency Management:** All dependencies are up-to-date.
+*   **Cloud Firestore:** The project uses Cloud Firestore as its database, with security rules configured to allow authenticated users to read and write to the `products` collection.
 
-## Project Structure
+## Development History
 
-The project is structured as follows:
+### Initial Setup
 
-*   `lib/`: Contains the main application code.
-    *   `main.dart`: The entry point of the application.
-    *   `src/`: Contains the core application logic.
-        *   `models/`: Data models for the application.
-        *   `providers/`: State management providers.
-        *   `services/`: Services for interacting with external APIs (e.g., Firebase).
-        *   `ui/`: UI components and screens.
+*   **Firebase Initialization:**
+    *   Configured the Firebase server environment (`.idx/mcp.json`).
+    *   Installed the Firebase CLI (`firebase-tools`).
+    *   Authenticated the user's Firebase account.
+    *   Configured the Flutter project with `flutterfire configure`.
+    *   Updated all project dependencies to the latest versions.
 
-## Plan
+### Firestore Configuration
 
-1.  **Review and fix all errors in the project.**
-2.  **Create a `blueprint.md` file to document the project.**
-3.  **Answer the user's request.**
+*   **Firestore Initialization:** Ran `firebase init firestore` to set up Firestore rules and indexes.
+*   **Security Rules:** Updated and deployed `firestore.rules` to restrict database access to authenticated users.
+
+### Package Name Change
+
+*   **Android:**
+    *   Updated `applicationId` and `namespace` in `android/app/build.gradle.kts` to `com.lmywilks.price_tracker`.
+    *   Moved `MainActivity.kt` to `android/app/src/main/kotlin/com/lmywilks/price_tracker/` and updated its package declaration.
+*   **Firebase:**
+    *   Re-ran `flutterfire configure` to generate new platform-specific configurations (`google-services.json` and `firebase_options.dart`) to match the new package name.
+*   **iOS:**
+    *   No changes were made as the `ios` directory was not found.

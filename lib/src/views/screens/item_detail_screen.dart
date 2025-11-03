@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:price_tracker/src/models/item_model.dart';
 import 'package:price_tracker/src/models/price_model.dart';
+import 'package:price_tracker/src/providers/location_provider.dart';
 import 'package:price_tracker/src/services/firestore_service.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ItemDetailScreen extends StatelessWidget {
   final String itemId;
@@ -11,7 +13,8 @@ class ItemDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firestoreService = FirestoreService();
+    final firestoreService = Provider.of<FirestoreService>(context);
+    final locationProvider = Provider.of<LocationProvider>(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Item Details')),
@@ -62,12 +65,13 @@ class ItemDetailScreen extends StatelessWidget {
                       itemCount: prices.length,
                       itemBuilder: (context, index) {
                         final price = prices[index];
+                        final locationName = locationProvider.getLocationName(price.locationId);
                         return Card(
                           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           child: ListTile(
                             title: Text('\$${price.value.toStringAsFixed(2)}', style: Theme.of(context).textTheme.titleLarge),
                             subtitle: Text(DateFormat.yMMMd().format(price.createdAt.toDate())),
-                            trailing: Text(price.locationId), // In a real app, you'd fetch the location name
+                            trailing: Text(locationName),
                           ),
                         );
                       },

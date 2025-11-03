@@ -6,13 +6,14 @@ import 'package:price_tracker/src/services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:price_tracker/src/providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class AdminScreen extends StatelessWidget {
   const AdminScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final firestoreService = FirestoreService();
+    final firestoreService = Provider.of<FirestoreService>(context);
 
     return DefaultTabController(
       length: 3,
@@ -29,7 +30,7 @@ class AdminScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildItemsTab(firestoreService),
+            _buildItemsTab(context, firestoreService),
             _buildCategoriesTab(context, firestoreService),
             _buildLocationsTab(context, firestoreService),
           ],
@@ -38,7 +39,7 @@ class AdminScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildItemsTab(FirestoreService firestoreService) {
+  Widget _buildItemsTab(BuildContext context, FirestoreService firestoreService) {
     return StreamBuilder<List<Item>>(
       stream: firestoreService.getItems(),
       builder: (context, snapshot) {
@@ -62,10 +63,21 @@ class AdminScreen extends StatelessWidget {
               margin: const EdgeInsets.symmetric(vertical: 8.0),
               child: ListTile(
                 title: Text(item.name, style: Theme.of(context).textTheme.titleMedium),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: () => firestoreService.deleteItem(item.id),
-                  tooltip: 'Delete Item',
+                subtitle: Text('Created by: ${item.createdBy}'), // Added to show who created the item
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                      onPressed: () => context.go('/item/${item.id}'), // Navigate to item detail page
+                      tooltip: 'Edit Item',
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () => firestoreService.deleteItem(item.id),
+                      tooltip: 'Delete Item',
+                    ),
+                  ],
                 ),
               ),
             );

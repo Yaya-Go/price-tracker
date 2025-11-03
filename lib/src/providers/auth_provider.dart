@@ -10,9 +10,14 @@ class AuthProvider with ChangeNotifier {
   AuthStatus _status = AuthStatus.unauthenticated;
   String? _errorMessage;
 
+  // Simple list of admin UIDs for demonstration.
+  // For a production app, use a more secure method like Firebase Custom Claims.
+  final List<String> _adminUids = ['REPLACE_WITH_YOUR_ADMIN_UID']; // TODO: Replace with a real Admin UID
+
   User? get user => _user;
   AuthStatus get status => _status;
   String? get errorMessage => _errorMessage;
+  bool get isAdmin => _user != null && _adminUids.contains(_user!.uid);
 
   AuthProvider() {
     _authService.authStateChanges.listen((User? user) {

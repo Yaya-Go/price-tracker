@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:price_tracker/src/providers/auth_provider.dart';
-import 'package:price_tracker/main.dart';
+import 'package:price_tracker/src/providers/theme_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -52,10 +52,11 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () => context.go('/my-items'),
                     child: const Text('View My Items'),
                   ),
-                  ElevatedButton(
-                    onPressed: () => context.go('/admin'),
-                    child: const Text('Admin Panel'),
-                  ),
+                  if (authProvider.isAdmin)
+                    ElevatedButton(
+                      onPressed: () => context.go('/admin'),
+                      child: const Text('Admin Panel'),
+                    ),
                 ],
               ),
           ],

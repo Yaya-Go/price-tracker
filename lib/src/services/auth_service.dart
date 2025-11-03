@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthService {
@@ -13,7 +14,7 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }
@@ -26,7 +27,7 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }

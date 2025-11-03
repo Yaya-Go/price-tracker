@@ -16,7 +16,7 @@ class FirestoreService {
   Stream<List<Item>> getUserItems(String userId) {
     return _db
         .collection('items')
-        .where('userId', isEqualTo: userId)
+        .where('createdBy', isEqualTo: userId)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Item.fromFirestore(doc)).toList());
@@ -26,8 +26,9 @@ class FirestoreService {
     return _db.collection('items').doc(itemId).snapshots().map((doc) => Item.fromFirestore(doc));
   }
 
-  Future<void> addItem(Item item) {
-    return _db.collection('items').add(item.toFirestore());
+  Future<String> addItem(Item item) async {
+    final docRef = await _db.collection('items').add(item.toFirestore());
+    return docRef.id;
   }
 
   Future<void> updateItem(Item item) {
@@ -40,7 +41,7 @@ class FirestoreService {
 
   // Category operations
   Stream<List<Category>> getCategories() {
-    return _db.collection('categories').snapshots().map((snapshot) =>
+    return _db.collection('categories').orderBy('name').snapshots().map((snapshot) =>
         snapshot.docs.map((doc) => Category.fromFirestore(doc)).toList());
   }
 
@@ -56,10 +57,41 @@ class FirestoreService {
     return _db.collection('categories').doc(categoryId).delete();
   }
 
+  Future<void> seedCategories() async {
+    final categoriesCollection = _db.collection('categories');
+    final snapshot = await categoriesCollection.limit(1).get();
+
+    if (snapshot.docs.isEmpty) {
+      final List<String> presetCategories = [
+        'Electronics',
+        'Food & Drink',
+        'Restaurant',
+        'Entertainment',
+        'Travel',
+        'Clothing',
+        'Petrol',
+        'Household',
+        'Grocery',
+        'Other',
+      ];
+
+      for (final categoryName in presetCategories) {
+        final newCategory = Category(
+          id: '', // Firestore will generate
+          name: categoryName,
+          lastModified: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          createdBy: 'system',
+        );
+        await categoriesCollection.add(newCategory.toFirestore());
+      }
+    }
+  }
+
 
   // Location operations
   Stream<List<Location>> getLocations() {
-    return _db.collection('locations').snapshots().map((snapshot) =>
+    return _db.collection('locations').orderBy('name').snapshots().map((snapshot) =>
         snapshot.docs.map((doc) => Location.fromFirestore(doc)).toList());
   }
 
@@ -75,20 +107,50 @@ class FirestoreService {
     return _db.collection('locations').doc(locationId).delete();
   }
 
+  Future<void> seedLocations() async {
+    final locationsCollection = _db.collection('locations');
+    final snapshot = await locationsCollection.limit(1).get();
+
+    if (snapshot.docs.isEmpty) {
+      final List<String> presetLocations = [
+        'Walmart',
+        'Target',
+        'Costco',
+        'Amazon',
+        'Best Buy',
+        'Home Depot',
+        'Lowes',
+        'Walgreens',
+        'CVS',
+        'Kroger',
+      ];
+
+      for (final locationName in presetLocations) {
+        final newLocation = Location(
+          id: '', // Firestore will generate
+          name: locationName,
+          lastModified: Timestamp.now(),
+          createdAt: Timestamp.now(),
+          createdBy: 'system',
+        );
+        await locationsCollection.add(newLocation.toFirestore());
+      }
+    }
+  }
+
 
   // Price operations
   Stream<List<Price>> getPrices(String itemId) {
     return _db
-        .collection('items')
-        .doc(itemId)
         .collection('prices')
+        .where('itemId', isEqualTo: itemId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) =>
             snapshot.docs.map((doc) => Price.fromFirestore(doc)).toList());
   }
 
-  Future<void> addPrice(String itemId, Price price) {
-    return _db.collection('items').doc(itemId).collection('prices').add(price.toFirestore());
+  Future<void> addPrice(Price price) {
+    return _db.collection('prices').add(price.toFirestore());
   }
 }

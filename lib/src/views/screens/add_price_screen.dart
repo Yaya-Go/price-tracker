@@ -17,12 +17,12 @@ class AddPriceScreen extends StatefulWidget {
 
 class _AddPriceScreenState extends State<AddPriceScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _valueController = TextEditingController();
-  String? _selectedLocationId;
+  final _priceController = TextEditingController();
+  Location? _selectedLocation;
 
   @override
   Widget build(BuildContext context) {
-    final firestoreService = FirestoreService();
+    final firestoreService = Provider.of<FirestoreService>(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Scaffold(
@@ -30,53 +30,58 @@ class _AddPriceScreenState extends State<AddPriceScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formHey,
+          key: _formKey,
           child: Column(
             children: [
-              TextFormField(
-                controller: _valueController,
-                decoration: const InputDecoration(labelText: 'Price', prefixIcon: Icon(Icons.attach_money)),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
-              ),
-              const SizedBox(height: 12),
               StreamBuilder<List<Location>>(
                 stream: firestoreService.getLocations(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return const CircularProgressIndicator();
+                    return const Center(child: CircularProgressIndicator());
                   }
                   final locations = snapshot.data!;
-                  return DropdownButtonFormField<String>(
-                    initialValue: _selectedLocationId,
-                    hint: const Text('Select Location'),
+                  return DropdownButtonFormField<Location>(
+                    value: _selectedLocation,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                    items: locations.map((location) {
+                      return DropdownMenuItem<Location>(
+                        value: location,
+                        child: Text(location.name),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
-                        _selectedLocationId = value;
+                        _selectedLocation = value;
                       });
                     },
-                    items: locations.map((location) {
-                      return DropdownMenuItem(value: location.id, child: Text(location.name));
-                    }).toList(),
                     validator: (value) => value == null ? 'Please select a location' : null,
                   );
                 },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _priceController,
+                decoration: const InputDecoration(labelText: 'Price', prefixIcon: Icon(Icons.attach_money)),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
+                    final router = GoRouter.of(context);
                     final newPrice = Price(
-                      id: '', // Firestore will generate an ID
+                      id: '',
                       itemId: widget.itemId,
-                      value: double.parse(_valueController.text),
-                      locationId: _selectedLocationId!,
+                      value: double.parse(_priceController.text),
+                      locationId: _selectedLocation!.id,
                       lastModified: Timestamp.now(),
                       createdAt: Timestamp.now(),
                       createdBy: authProvider.user!.uid,
                     );
-                    await firestoreService.addPrice(widget.itemId, newPrice);
-                    context.pop();
+                    await firestoreService.addPrice(newPrice);
+
+                    router.pop();
                   }
                 },
                 child: const Text('Add Price'),
